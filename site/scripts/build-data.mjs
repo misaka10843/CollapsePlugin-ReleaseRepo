@@ -167,15 +167,40 @@ function listAssets(pluginId) {
   return files;
 }
 
+const IMAGE_EXTS = new Set(['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.bmp']);
+const PUBLIC_ASSETS_DIR = path.resolve(__dirname, '..', 'docs', 'public', 'plugin-assets');
+
+function rewriteAndCopyImages(markdown, pluginId) {
+  const assetBase = `/plugin-assets/${pluginId}`;
+  const srcBase = path.join(ROOT, pluginId);
+  const dstBase = path.join(PUBLIC_ASSETS_DIR, pluginId);
+
+  return markdown.replace(
+    /!\[([^\]]*)\]\((?!https?:\/\/|\/\/|#)([^)\s]+)(\s+["'][^"']*["'])?\)/g,
+    (match, alt, imgSrc, title = '') => {
+      const clean = imgSrc.replace(/^\.\//, '');
+      const ext = path.extname(clean).toLowerCase();
+      if (!IMAGE_EXTS.has(ext)) return match; // leave non-image relative links untouched
+      const srcFile = path.join(srcBase, clean);
+      if (fs.existsSync(srcFile)) {
+        const dstFile = path.join(dstBase, clean);
+        fs.mkdirSync(path.dirname(dstFile), { recursive: true });
+        fs.copyFileSync(srcFile, dstFile);
+      }
+      return `![${alt}](${assetBase}/${clean}${title})`;
+    }
+  );
+}
+
 function copyReadmes(pluginId) {
   const id = pluginId.toLowerCase();
-  const src = (lang) => path.join(ROOT, pluginId, lang === 'en' ? 'README.md' : 'README.zh.md');
+  const src = (lang) => path.join(ROOT, pluginId, lang === 'en' ? 'README.md' : 'README.zh-CN.md');
   const dst = (lang) => path.join(READMES_DIR, `${id}-${lang}.md`);
   for (const lang of ['en', 'zh']) {
-    if (fs.existsSync(src(lang))) {
-      fs.copyFileSync(src(lang), dst(lang));
-    } else if (lang === 'zh' && fs.existsSync(src('en'))) {
-      fs.copyFileSync(src('en'), dst(lang));
+    const srcFile = lang === 'zh' && !fs.existsSync(src('zh')) ? src('en') : src(lang);
+    if (fs.existsSync(srcFile)) {
+      const content = rewriteAndCopyImages(fs.readFileSync(srcFile, 'utf-8'), pluginId);
+      fs.writeFileSync(dst(lang), content, 'utf-8');
     } else {
       // Write placeholder so rspress MDX imports always resolve
       fs.writeFileSync(dst(lang), `# ${pluginId}\n\nNo documentation available.\n`);

@@ -5,6 +5,7 @@ site/doc_build/
 
 # Generated at build time (CI regenerates from manifests + GH API)
 site/docs/public/icons/
+site/docs/public/plugin-assets/
 site/docs/_readmes/
 # Keep placeholder plugins.json but ignore the generated one
 # Uncomment the line below if you prefer not to commit the placeholder:
