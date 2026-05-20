@@ -1,0 +1,19 @@
+---
+pageType: custom
+title: BlueArchive Plugin | Collapse Launcher Plugins
+description: Third-party BlueArchive plugin for Collapse Launcher. Download and install the latest version.
+head:
+  - - meta
+    - property: og:image
+      content: https://cl-plugins.sakurakoi.top/icons/BlueArchive.png
+  - - meta
+    - property: og:type
+      content: website
+---
+
+import PluginDetailPage from '@components/PluginDetailPage';
+import plugins from '@data/plugins.json';
+import ReadmeEn from '../_readmes/BlueArchive-en.md';
+import ReadmeZh from '../_readmes/BlueArchive-zh.md';
+
+<PluginDetailPage id="BlueArchive" lang="en" plugins={plugins} ReadmeEn={ReadmeEn} ReadmeZh={ReadmeZh} />

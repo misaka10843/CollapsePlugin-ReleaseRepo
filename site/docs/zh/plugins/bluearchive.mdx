@@ -1,0 +1,19 @@
+---
+pageType: custom
+title: 碧蓝档案插件 | Collapse Launcher 插件
+description: 适用于 Collapse Launcher 的碧蓝档案第三方插件，下载安装最新版本。
+head:
+  - - meta
+    - property: og:image
+      content: https://cl-plugins.sakurakoi.top/icons/BlueArchive.png
+  - - meta
+    - property: og:type
+      content: website
+---
+
+import PluginDetailPage from '@components/PluginDetailPage';
+import plugins from '@data/plugins.json';
+import ReadmeEn from '../../_readmes/BlueArchive-en.md';
+import ReadmeZh from '../../_readmes/BlueArchive-zh.md';
+
+<PluginDetailPage id="BlueArchive" lang="zh" plugins={plugins} ReadmeEn={ReadmeEn} ReadmeZh={ReadmeZh} />
