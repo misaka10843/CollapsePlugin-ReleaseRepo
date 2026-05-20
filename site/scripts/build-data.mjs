@@ -16,10 +16,10 @@ const ICONS_DIR = path.resolve(__dirname, '..', 'docs', 'public', 'icons');
 
 const GITHUB_REPO = 'misaka10843/CollapsePlugin-ReleaseRepo';
 const GITHUB_RAW_BASE = `https://raw.githubusercontent.com/${GITHUB_REPO}/main`;
-const JSDELIVR_BASE = `https://cdn.jsdelivr.net/gh/${GITHUB_REPO}@main`;
+const JSDELIVR_BASE = `https://fastly.jsdelivr.net/gh/${GITHUB_REPO}@main`;
 
 // Plugin folders to scan (directory name is the plugin id)
-const PLUGIN_DIRS = ['Arknights', 'Endfield', 'StellaSora'];
+const PLUGIN_DIRS = ['Arknights', 'Endfield', 'StellaSora', 'BlueArchive'];
 
 const READMES_DIR = path.resolve(__dirname, '..', 'docs', '_readmes');
 // site/plugins/{id}/ — source of README and meta.json (committed, editable without touching manifest)
