@@ -1,0 +1,260 @@
+[
+  {
+    "id": "Arknights",
+    "name": "Arknights Plugin",
+    "author": "misaka10843",
+    "description": "A plugin for Arknights in Collapse Launcher",
+    "version": "1.0.2.0",
+    "standardVersion": "0.1.5.0",
+    "createdAt": "2026-02-13T00:00:00+00:00",
+    "updatedAt": "2026-04-22T14:27:42.2759262+00:00",
+    "icon": "/icons/Arknights.png",
+    "mainLibrary": "Arknights.dll",
+    "latestZip": {
+      "filename": "Arknights_1.0.2.0_API-0.1.5.0_20260422.zip",
+      "version": "1.0.2.0",
+      "size": 14497455,
+      "githubRaw": "https://raw.githubusercontent.com/misaka10843/CollapsePlugin-ReleaseRepo/main/Arknights/build/Arknights_1.0.2.0_API-0.1.5.0_20260422.zip",
+      "jsdelivr": "https://cdn.jsdelivr.net/gh/misaka10843/CollapsePlugin-ReleaseRepo@main/Arknights/build/Arknights_1.0.2.0_API-0.1.5.0_20260422.zip"
+    },
+    "assets": [
+      {
+        "path": "Arknights.dll",
+        "size": 12959232,
+        "siteRelative": "/Arknights/Arknights.dll",
+        "githubRaw": "https://raw.githubusercontent.com/misaka10843/CollapsePlugin-ReleaseRepo/main/Arknights/Arknights.dll",
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/misaka10843/CollapsePlugin-ReleaseRepo@main/Arknights/Arknights.dll"
+      },
+      {
+        "path": "Arknights.pdb",
+        "size": 52752384,
+        "siteRelative": "/Arknights/Arknights.pdb",
+        "githubRaw": "https://raw.githubusercontent.com/misaka10843/CollapsePlugin-ReleaseRepo/main/Arknights/Arknights.pdb",
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/misaka10843/CollapsePlugin-ReleaseRepo@main/Arknights/Arknights.pdb"
+      },
+      {
+        "path": "Lib/7z.dll",
+        "size": 1854976,
+        "siteRelative": "/Arknights/Lib/7z.dll",
+        "githubRaw": "https://raw.githubusercontent.com/misaka10843/CollapsePlugin-ReleaseRepo/main/Arknights/Lib/7z.dll",
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/misaka10843/CollapsePlugin-ReleaseRepo@main/Arknights/Lib/7z.dll"
+      },
+      {
+        "path": "Lib/linux-x64/libzstd-bmi2.so",
+        "size": 1054248,
+        "siteRelative": "/Arknights/Lib/linux-x64/libzstd-bmi2.so",
+        "githubRaw": "https://raw.githubusercontent.com/misaka10843/CollapsePlugin-ReleaseRepo/main/Arknights/Lib/linux-x64/libzstd-bmi2.so",
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/misaka10843/CollapsePlugin-ReleaseRepo@main/Arknights/Lib/linux-x64/libzstd-bmi2.so"
+      },
+      {
+        "path": "Lib/linux-x64/libzstd.so",
+        "size": 881304,
+        "siteRelative": "/Arknights/Lib/linux-x64/libzstd.so",
+        "githubRaw": "https://raw.githubusercontent.com/misaka10843/CollapsePlugin-ReleaseRepo/main/Arknights/Lib/linux-x64/libzstd.so",
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/misaka10843/CollapsePlugin-ReleaseRepo@main/Arknights/Lib/linux-x64/libzstd.so"
+      },
+      {
+        "path": "Lib/win-arm64/libzstd.dll",
+        "size": 622080,
+        "siteRelative": "/Arknights/Lib/win-arm64/libzstd.dll",
+        "githubRaw": "https://raw.githubusercontent.com/misaka10843/CollapsePlugin-ReleaseRepo/main/Arknights/Lib/win-arm64/libzstd.dll",
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/misaka10843/CollapsePlugin-ReleaseRepo@main/Arknights/Lib/win-arm64/libzstd.dll"
+      },
+      {
+        "path": "Lib/win-x64/libzstd-bmi2.dll",
+        "size": 1254833,
+        "siteRelative": "/Arknights/Lib/win-x64/libzstd-bmi2.dll",
+        "githubRaw": "https://raw.githubusercontent.com/misaka10843/CollapsePlugin-ReleaseRepo/main/Arknights/Lib/win-x64/libzstd-bmi2.dll",
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/misaka10843/CollapsePlugin-ReleaseRepo@main/Arknights/Lib/win-x64/libzstd-bmi2.dll"
+      },
+      {
+        "path": "Lib/win-x64/libzstd.dll",
+        "size": 661504,
+        "siteRelative": "/Arknights/Lib/win-x64/libzstd.dll",
+        "githubRaw": "https://raw.githubusercontent.com/misaka10843/CollapsePlugin-ReleaseRepo/main/Arknights/Lib/win-x64/libzstd.dll",
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/misaka10843/CollapsePlugin-ReleaseRepo@main/Arknights/Lib/win-x64/libzstd.dll"
+      },
+      {
+        "path": "Lib/win-x86/libzstd.dll",
+        "size": 976896,
+        "siteRelative": "/Arknights/Lib/win-x86/libzstd.dll",
+        "githubRaw": "https://raw.githubusercontent.com/misaka10843/CollapsePlugin-ReleaseRepo/main/Arknights/Lib/win-x86/libzstd.dll",
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/misaka10843/CollapsePlugin-ReleaseRepo@main/Arknights/Lib/win-x86/libzstd.dll"
+      },
+      {
+        "path": "SevenZipExtractor.pdb",
+        "size": 48336,
+        "siteRelative": "/Arknights/SevenZipExtractor.pdb",
+        "githubRaw": "https://raw.githubusercontent.com/misaka10843/CollapsePlugin-ReleaseRepo/main/Arknights/SevenZipExtractor.pdb",
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/misaka10843/CollapsePlugin-ReleaseRepo@main/Arknights/SevenZipExtractor.pdb"
+      }
+    ],
+    "releases": [],
+    "readme": {
+      "en": null,
+      "zh": null
+    },
+    "readmeHtml": {
+      "en": null,
+      "zh": null
+    }
+  },
+  {
+    "id": "Endfield",
+    "name": "Arknights: Endfield Plugin",
+    "author": "misaka10843",
+    "description": "A plugin for Arknights: Endfield in Collapse Launcher",
+    "version": "1.0.2.0",
+    "standardVersion": "0.1.5.0",
+    "createdAt": "2026-01-27T00:00:00+00:00",
+    "updatedAt": "2026-04-22T14:26:41.7202761+00:00",
+    "icon": "/icons/Endfield.png",
+    "mainLibrary": "Endfield.dll",
+    "latestZip": {
+      "filename": "Endfield_1.0.2.0_API-0.1.5.0_20260422.zip",
+      "version": "1.0.2.0",
+      "size": 14248369,
+      "githubRaw": "https://raw.githubusercontent.com/misaka10843/CollapsePlugin-ReleaseRepo/main/Endfield/build/Endfield_1.0.2.0_API-0.1.5.0_20260422.zip",
+      "jsdelivr": "https://cdn.jsdelivr.net/gh/misaka10843/CollapsePlugin-ReleaseRepo@main/Endfield/build/Endfield_1.0.2.0_API-0.1.5.0_20260422.zip"
+    },
+    "assets": [
+      {
+        "path": "Endfield.dll",
+        "size": 12846592,
+        "siteRelative": "/Endfield/Endfield.dll",
+        "githubRaw": "https://raw.githubusercontent.com/misaka10843/CollapsePlugin-ReleaseRepo/main/Endfield/Endfield.dll",
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/misaka10843/CollapsePlugin-ReleaseRepo@main/Endfield/Endfield.dll"
+      },
+      {
+        "path": "Endfield.pdb",
+        "size": 52776960,
+        "siteRelative": "/Endfield/Endfield.pdb",
+        "githubRaw": "https://raw.githubusercontent.com/misaka10843/CollapsePlugin-ReleaseRepo/main/Endfield/Endfield.pdb",
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/misaka10843/CollapsePlugin-ReleaseRepo@main/Endfield/Endfield.pdb"
+      },
+      {
+        "path": "Lib/7z.dll",
+        "size": 1854976,
+        "siteRelative": "/Endfield/Lib/7z.dll",
+        "githubRaw": "https://raw.githubusercontent.com/misaka10843/CollapsePlugin-ReleaseRepo/main/Endfield/Lib/7z.dll",
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/misaka10843/CollapsePlugin-ReleaseRepo@main/Endfield/Lib/7z.dll"
+      },
+      {
+        "path": "Lib/linux-x64/libzstd-bmi2.so",
+        "size": 1054248,
+        "siteRelative": "/Endfield/Lib/linux-x64/libzstd-bmi2.so",
+        "githubRaw": "https://raw.githubusercontent.com/misaka10843/CollapsePlugin-ReleaseRepo/main/Endfield/Lib/linux-x64/libzstd-bmi2.so",
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/misaka10843/CollapsePlugin-ReleaseRepo@main/Endfield/Lib/linux-x64/libzstd-bmi2.so"
+      },
+      {
+        "path": "Lib/linux-x64/libzstd.so",
+        "size": 881304,
+        "siteRelative": "/Endfield/Lib/linux-x64/libzstd.so",
+        "githubRaw": "https://raw.githubusercontent.com/misaka10843/CollapsePlugin-ReleaseRepo/main/Endfield/Lib/linux-x64/libzstd.so",
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/misaka10843/CollapsePlugin-ReleaseRepo@main/Endfield/Lib/linux-x64/libzstd.so"
+      },
+      {
+        "path": "Lib/win-arm64/libzstd.dll",
+        "size": 622080,
+        "siteRelative": "/Endfield/Lib/win-arm64/libzstd.dll",
+        "githubRaw": "https://raw.githubusercontent.com/misaka10843/CollapsePlugin-ReleaseRepo/main/Endfield/Lib/win-arm64/libzstd.dll",
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/misaka10843/CollapsePlugin-ReleaseRepo@main/Endfield/Lib/win-arm64/libzstd.dll"
+      },
+      {
+        "path": "Lib/win-x64/libzstd-bmi2.dll",
+        "size": 1254833,
+        "siteRelative": "/Endfield/Lib/win-x64/libzstd-bmi2.dll",
+        "githubRaw": "https://raw.githubusercontent.com/misaka10843/CollapsePlugin-ReleaseRepo/main/Endfield/Lib/win-x64/libzstd-bmi2.dll",
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/misaka10843/CollapsePlugin-ReleaseRepo@main/Endfield/Lib/win-x64/libzstd-bmi2.dll"
+      },
+      {
+        "path": "Lib/win-x64/libzstd.dll",
+        "size": 661504,
+        "siteRelative": "/Endfield/Lib/win-x64/libzstd.dll",
+        "githubRaw": "https://raw.githubusercontent.com/misaka10843/CollapsePlugin-ReleaseRepo/main/Endfield/Lib/win-x64/libzstd.dll",
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/misaka10843/CollapsePlugin-ReleaseRepo@main/Endfield/Lib/win-x64/libzstd.dll"
+      },
+      {
+        "path": "Lib/win-x86/libzstd.dll",
+        "size": 976896,
+        "siteRelative": "/Endfield/Lib/win-x86/libzstd.dll",
+        "githubRaw": "https://raw.githubusercontent.com/misaka10843/CollapsePlugin-ReleaseRepo/main/Endfield/Lib/win-x86/libzstd.dll",
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/misaka10843/CollapsePlugin-ReleaseRepo@main/Endfield/Lib/win-x86/libzstd.dll"
+      },
+      {
+        "path": "SevenZipExtractor.pdb",
+        "size": 48336,
+        "siteRelative": "/Endfield/SevenZipExtractor.pdb",
+        "githubRaw": "https://raw.githubusercontent.com/misaka10843/CollapsePlugin-ReleaseRepo/main/Endfield/SevenZipExtractor.pdb",
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/misaka10843/CollapsePlugin-ReleaseRepo@main/Endfield/SevenZipExtractor.pdb"
+      }
+    ],
+    "releases": [],
+    "readme": {
+      "en": null,
+      "zh": null
+    },
+    "readmeHtml": {
+      "en": null,
+      "zh": null
+    }
+  },
+  {
+    "id": "StellaSora",
+    "name": "Stella Sora Plugin",
+    "author": "misaka10843",
+    "description": "A plugin for Stella Sora in Collapse Launcher",
+    "version": "0.0.1.0",
+    "standardVersion": "0.1.5.0",
+    "createdAt": "2026-04-16T00:00:00+00:00",
+    "updatedAt": "2026-04-16T12:56:37.6567541+00:00",
+    "icon": "/icons/StellaSora.png",
+    "mainLibrary": "StellaSora.dll",
+    "latestZip": {
+      "filename": "StellaSora_0.0.1.0_API-0.1.5.0_20260416.zip",
+      "version": "0.0.1.0",
+      "size": 12447653,
+      "githubRaw": "https://raw.githubusercontent.com/misaka10843/CollapsePlugin-ReleaseRepo/main/StellaSora/build/StellaSora_0.0.1.0_API-0.1.5.0_20260416.zip",
+      "jsdelivr": "https://cdn.jsdelivr.net/gh/misaka10843/CollapsePlugin-ReleaseRepo@main/StellaSora/build/StellaSora_0.0.1.0_API-0.1.5.0_20260416.zip"
+    },
+    "assets": [
+      {
+        "path": "Lib/7z.dll",
+        "size": 1854976,
+        "siteRelative": "/StellaSora/Lib/7z.dll",
+        "githubRaw": "https://raw.githubusercontent.com/misaka10843/CollapsePlugin-ReleaseRepo/main/StellaSora/Lib/7z.dll",
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/misaka10843/CollapsePlugin-ReleaseRepo@main/StellaSora/Lib/7z.dll"
+      },
+      {
+        "path": "SevenZipExtractor.pdb",
+        "size": 48336,
+        "siteRelative": "/StellaSora/SevenZipExtractor.pdb",
+        "githubRaw": "https://raw.githubusercontent.com/misaka10843/CollapsePlugin-ReleaseRepo/main/StellaSora/SevenZipExtractor.pdb",
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/misaka10843/CollapsePlugin-ReleaseRepo@main/StellaSora/SevenZipExtractor.pdb"
+      },
+      {
+        "path": "StellaSora.dll",
+        "size": 11924480,
+        "siteRelative": "/StellaSora/StellaSora.dll",
+        "githubRaw": "https://raw.githubusercontent.com/misaka10843/CollapsePlugin-ReleaseRepo/main/StellaSora/StellaSora.dll",
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/misaka10843/CollapsePlugin-ReleaseRepo@main/StellaSora/StellaSora.dll"
+      },
+      {
+        "path": "StellaSora.pdb",
+        "size": 46395392,
+        "siteRelative": "/StellaSora/StellaSora.pdb",
+        "githubRaw": "https://raw.githubusercontent.com/misaka10843/CollapsePlugin-ReleaseRepo/main/StellaSora/StellaSora.pdb",
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/misaka10843/CollapsePlugin-ReleaseRepo@main/StellaSora/StellaSora.pdb"
+      }
+    ],
+    "releases": [],
+    "readme": {
+      "en": null,
+      "zh": null
+    },
+    "readmeHtml": {
+      "en": null,
+      "zh": null
+    }
+  }
+]

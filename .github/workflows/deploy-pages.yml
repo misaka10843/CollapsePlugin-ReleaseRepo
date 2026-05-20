@@ -1,0 +1,78 @@
+name: Deploy GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: site/pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install
+        working-directory: site
+
+      - name: Build plugin data (fetch GitHub releases + extract icons)
+        run: pnpm run build:data
+        working-directory: site
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build site
+        run: pnpm exec rspress build
+        working-directory: site
+
+      # Copy plugin files (excluding build/ dirs and .pdb debug symbols) into
+      # the dist output so they are served from gh-pages under /Arknights/ etc.
+      - name: Copy plugin files to dist
+        run: |
+          DIST="site/doc_build"
+          for PLUGIN in Arknights Endfield StellaSora; do
+            DEST="$DIST/$PLUGIN"
+            mkdir -p "$DEST"
+            # Copy everything except the build/ directory
+            rsync -a --exclude='build/' "$PLUGIN/" "$DEST/"
+          done
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site/doc_build
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
