@@ -36,9 +36,11 @@ const i18n = {
     jsdelivr: 'jsDelivr',
     downloadFile: 'Download',
     zipVersion: 'Latest package',
+    announcement: 'Notice',
   },
   zh: {
     backToList: '返回插件列表',
+    announcement: '公告',
     by: '作者',
     download: '下载插件',
     downloading: '开始下载...',
@@ -149,9 +151,6 @@ export default function PluginDetail({ plugin, lang = 'en', ReadmeEn, ReadmeZh }
 
   const listHref = lang === 'zh' ? '/zh/plugins/' : '/plugins/';
   const ReadmeComponent = readmeLang === 'zh' ? (ReadmeZh || ReadmeEn) : (ReadmeEn || ReadmeZh);
-  const readmeHtml = !ReadmeComponent
-    ? (plugin.readmeHtml[readmeLang] || plugin.readmeHtml[lang === 'zh' ? 'en' : 'zh'])
-    : null;
 
   return (
     <div className="cp-detail">
@@ -161,6 +160,13 @@ export default function PluginDetail({ plugin, lang = 'en', ReadmeEn, ReadmeZh }
         </svg>
         {t.backToList}
       </a>
+
+      {plugin.announcement && (
+        <div className="cp-announcement">
+          <span className="cp-announcement-label">{t.announcement}</span>
+          <span>{plugin.announcement}</span>
+        </div>
+      )}
 
       <div className="cp-detail-header">
         <PluginIcon plugin={plugin} />
@@ -215,11 +221,6 @@ export default function PluginDetail({ plugin, lang = 'en', ReadmeEn, ReadmeZh }
                     <ReadmeComponent />
                   </div>
                 </div>
-              ) : readmeHtml ? (
-                <div
-                  className="cp-readme-html"
-                  dangerouslySetInnerHTML={{ __html: readmeHtml }}
-                />
               ) : (
                 <div className="cp-readme-html">
                   <p style={{ color: 'var(--cp-text-muted)' }}>{t.noReadme}</p>

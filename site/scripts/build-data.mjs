@@ -7,7 +7,6 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { marked } from 'marked';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // site/scripts/ -> site/ -> repo root
@@ -23,6 +22,8 @@ const JSDELIVR_BASE = `https://cdn.jsdelivr.net/gh/${GITHUB_REPO}@main`;
 const PLUGIN_DIRS = ['Arknights', 'Endfield', 'StellaSora'];
 
 const READMES_DIR = path.resolve(__dirname, '..', 'docs', '_readmes');
+// site/plugins/{id}/ — source of README and meta.json (committed, editable without touching manifest)
+const PLUGIN_META_DIR = path.resolve(__dirname, '..', 'plugins');
 
 fs.mkdirSync(DATA_DIR, { recursive: true });
 fs.mkdirSync(ICONS_DIR, { recursive: true });
@@ -83,16 +84,10 @@ function extractIcon(pluginId, iconBase64) {
   }
 }
 
-function readPluginReadme(pluginId, lang) {
-  const candidates = [
-    path.join(ROOT, pluginId, `README.${lang}.md`),
-    path.join(ROOT, pluginId, `README.${lang.toUpperCase()}.md`),
-    lang === 'en' ? path.join(ROOT, pluginId, 'README.md') : null,
-  ].filter(Boolean);
-  for (const p of candidates) {
-    if (fs.existsSync(p)) return fs.readFileSync(p, 'utf-8');
-  }
-  return null;
+function readPluginMeta(pluginId) {
+  const metaPath = path.join(PLUGIN_META_DIR, pluginId, 'meta.json');
+  if (!fs.existsSync(metaPath)) return {};
+  try { return JSON.parse(fs.readFileSync(metaPath, 'utf-8')); } catch { return {}; }
 }
 
 /**
@@ -194,15 +189,20 @@ function rewriteAndCopyImages(markdown, pluginId) {
 
 function copyReadmes(pluginId) {
   const id = pluginId.toLowerCase();
-  const src = (lang) => path.join(ROOT, pluginId, lang === 'en' ? 'README.md' : 'README.zh-CN.md');
+  const metaDir = path.join(PLUGIN_META_DIR, pluginId);
+  const src = (lang) => lang === 'en'
+    ? path.join(metaDir, 'README.md')
+    : path.join(metaDir, 'README.zh-CN.md');
   const dst = (lang) => path.join(READMES_DIR, `${id}-${lang}.md`);
   for (const lang of ['en', 'zh']) {
-    const srcFile = lang === 'zh' && !fs.existsSync(src('zh')) ? src('en') : src(lang);
-    if (fs.existsSync(srcFile)) {
+    // zh falls back to en if zh-CN file missing
+    const srcFile = fs.existsSync(src(lang)) ? src(lang)
+      : lang === 'zh' && fs.existsSync(src('en')) ? src('en')
+      : null;
+    if (srcFile) {
       const content = rewriteAndCopyImages(fs.readFileSync(srcFile, 'utf-8'), pluginId);
       fs.writeFileSync(dst(lang), content, 'utf-8');
     } else {
-      // Write placeholder so rspress MDX imports always resolve
       fs.writeFileSync(dst(lang), `# ${pluginId}\n\nNo documentation available.\n`);
     }
   }
@@ -227,13 +227,10 @@ async function main() {
       continue;
     }
 
+    const meta = readPluginMeta(pluginId);
     copyReadmes(pluginId);
     const iconPath = extractIcon(pluginId, manifest.PluginAlternativeIcon);
     const releases = await fetchReleases(pluginId);
-    const readmeEn = readPluginReadme(pluginId, 'en');
-    const readmeZh = readPluginReadme(pluginId, 'zh');
-    const readmeHtmlEn = readmeEn ? marked.parse(readmeEn) : null;
-    const readmeHtmlZh = readmeZh ? marked.parse(readmeZh) : null;
     const assets = listAssets(pluginId);
     const latestZip = findLatestZip(pluginId);
 
@@ -255,8 +252,7 @@ async function main() {
       latestZip,
       assets,
       releases,
-      readme: { en: readmeEn, zh: readmeZh },
-      readmeHtml: { en: readmeHtmlEn, zh: readmeHtmlZh },
+      announcement: meta.announcement || null,
     });
   }
 

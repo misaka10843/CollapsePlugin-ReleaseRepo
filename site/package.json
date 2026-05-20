@@ -1,20 +1,21 @@
 {
   "name": "collapse-plugin-site",
   "private": true,
+  "type": "module",
   "scripts": {
     "build:data": "node scripts/build-data.mjs",
-    "dev": "node scripts/build-data.mjs && node --max-old-space-size=8192 node_modules/.bin/rspress dev",
-    "build": "node scripts/build-data.mjs && node --max-old-space-size=8192 node_modules/.bin/rspress build",
+    "dev": "node scripts/build-data.mjs && rspress dev",
+    "build": "node scripts/build-data.mjs && rspress build",
     "preview": "rspress preview"
   },
-  "dependencies": {
-    "rspress": "^1.38.0"
-  },
   "devDependencies": {
+    "@rspress/plugin-sitemap": "^2.0.11",
     "@types/node": "^20.0.0",
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
-    "marked": "^15.0.0",
     "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@rspress/core": "^2.0.10"
   }
 }

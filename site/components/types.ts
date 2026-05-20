@@ -41,12 +41,5 @@ export interface PluginData {
   /** Non-build assets hosted on this site */
   assets: PluginAsset[];
   releases: PluginRelease[];
-  readme: {
-    en: string | null;
-    zh: string | null;
-  };
-  readmeHtml: {
-    en: string | null;
-    zh: string | null;
-  };
+  announcement?: string | null;
 }

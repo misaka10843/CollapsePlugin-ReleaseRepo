@@ -1,4 +1,5 @@
-import { defineConfig } from 'rspress/config';
+import { defineConfig } from '@rspress/core';
+import { pluginSitemap } from '@rspress/plugin-sitemap';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -78,6 +79,9 @@ export default defineConfig({
   lang: 'en',
   globalStyles: path.join(__dirname, 'styles', 'global.css'),
   outDir: path.join(__dirname, 'doc_build'),
+  plugins: [
+    pluginSitemap({ siteUrl: 'https://cl-plugins.sakurakoi.top' }),
+  ],
   builderConfig: {
     tools: {
       rspack: {

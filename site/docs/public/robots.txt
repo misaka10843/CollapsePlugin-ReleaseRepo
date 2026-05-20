@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /_readmes/
+
+Sitemap: https://cl-plugins.sakurakoi.top/sitemap.xml

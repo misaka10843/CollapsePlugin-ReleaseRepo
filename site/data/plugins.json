@@ -90,14 +90,7 @@
       }
     ],
     "releases": [],
-    "readme": {
-      "en": null,
-      "zh": null
-    },
-    "readmeHtml": {
-      "en": null,
-      "zh": null
-    }
+    "announcement": null
   },
   {
     "id": "Endfield",
@@ -190,14 +183,7 @@
       }
     ],
     "releases": [],
-    "readme": {
-      "en": null,
-      "zh": null
-    },
-    "readmeHtml": {
-      "en": null,
-      "zh": null
-    }
+    "announcement": null
   },
   {
     "id": "StellaSora",
@@ -248,13 +234,6 @@
       }
     ],
     "releases": [],
-    "readme": {
-      "en": null,
-      "zh": null
-    },
-    "readmeHtml": {
-      "en": null,
-      "zh": null
-    }
+    "announcement": null
   }
 ]
