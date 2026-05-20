@@ -169,14 +169,16 @@ function listAssets(pluginId) {
 
 function copyReadmes(pluginId) {
   const id = pluginId.toLowerCase();
-  const src = (lang) => path.join(ROOT, pluginId, lang === 'en' ? 'README.md' : `README.zh.md`);
+  const src = (lang) => path.join(ROOT, pluginId, lang === 'en' ? 'README.md' : 'README.zh.md');
   const dst = (lang) => path.join(READMES_DIR, `${id}-${lang}.md`);
   for (const lang of ['en', 'zh']) {
     if (fs.existsSync(src(lang))) {
       fs.copyFileSync(src(lang), dst(lang));
     } else if (lang === 'zh' && fs.existsSync(src('en'))) {
-      // fallback: copy English as Chinese placeholder
       fs.copyFileSync(src('en'), dst(lang));
+    } else {
+      // Write placeholder so rspress MDX imports always resolve
+      fs.writeFileSync(dst(lang), `# ${pluginId}\n\nNo documentation available.\n`);
     }
   }
 }
