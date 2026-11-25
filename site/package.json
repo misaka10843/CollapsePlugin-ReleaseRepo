@@ -2,10 +2,12 @@
   "name": "collapse-plugin-site",
   "private": true,
   "type": "module",
+  "packageManager": "pnpm@10.34.9",
   "scripts": {
     "build:data": "node scripts/build-data.mjs",
     "dev": "node scripts/build-data.mjs && rspress dev",
     "build": "node scripts/build-data.mjs && rspress build",
+    "typecheck": "tsc --noEmit",
     "preview": "rspress preview"
   },
   "devDependencies": {
@@ -13,6 +15,8 @@
     "@types/node": "^20.0.0",
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
+    "marked": "^18.3.0",
+    "sanitize-html": "^2.18.2",
     "typescript": "^5.0.0"
   },
   "dependencies": {

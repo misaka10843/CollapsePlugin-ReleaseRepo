@@ -1,7 +1,7 @@
 export interface PluginAsset {
   path: string;
   size: number;
-  /** Absolute URL via GitHub Raw (for speed test + fallback) */
+  /** Absolute URL via GitHub Raw */
   githubRaw: string;
   /** Absolute URL via jsDelivr CDN */
   jsdelivr: string;
@@ -13,6 +13,7 @@ export interface PluginZip {
   filename: string;
   version: string;
   size: number;
+  siteRelative: string;
   githubRaw: string;
   jsdelivr: string;
 }
@@ -21,11 +22,11 @@ export interface PluginRelease {
   version: string;
   name: string;
   date: string;
-  body: string;
+  bodyHtml: string;
   url: string;
 }
 
-export interface PluginData {
+export interface PluginSummary {
   id: string;
   name: string;
   author: string;
@@ -35,11 +36,17 @@ export interface PluginData {
   createdAt: string;
   updatedAt: string;
   icon: string | null;
+}
+
+export interface PluginData extends PluginSummary {
   mainLibrary: string;
-  /** Latest zip from build/ — used by the download button */
-  latestZip: PluginZip | null;
+  /** Current installable package from build/ */
+  latestZip: PluginZip;
   /** Non-build assets hosted on this site */
   assets: PluginAsset[];
   releases: PluginRelease[];
+  readmes: { en: string; zh: string };
+  repoUrl?: string;
+  releasesUrl?: string;
   announcement?: string | null;
 }

@@ -1,8 +1,9 @@
 import React from 'react';
-import type { PluginData } from './types';
+import type { PluginSummary } from './types';
+import PluginIcon from './PluginIcon';
 
 interface Props {
-  plugins: PluginData[];
+  plugins: PluginSummary[];
   lang?: 'en' | 'zh';
 }
 
@@ -13,10 +14,7 @@ const i18n = {
     subtitle: 'Third-party plugins extending Collapse Launcher with support for more games.',
     browse: 'Browse Plugins →',
     statsPlugins: 'Plugins',
-    statsAuthor: 'Author',
     featuredTitle: 'Available Plugins',
-    viewAll: 'View all plugins →',
-    by: 'by',
   },
   zh: {
     title: 'Collapse Launcher',
@@ -24,24 +22,16 @@ const i18n = {
     subtitle: '为 Collapse Launcher 提供更多游戏支持的第三方插件。',
     browse: '浏览所有插件 →',
     statsPlugins: '个插件',
-    statsAuthor: '开发者',
     featuredTitle: '可用插件',
-    viewAll: '查看全部插件 →',
-    by: '作者',
   },
 };
 
-function PluginMiniCard({ plugin, lang }: { plugin: PluginData; lang: 'en' | 'zh' }) {
-  const [iconError, setIconError] = React.useState(false);
+function PluginMiniCard({ plugin, lang }: { plugin: PluginSummary; lang: 'en' | 'zh' }) {
   const href = lang === 'zh' ? `/zh/plugins/${plugin.id.toLowerCase()}` : `/plugins/${plugin.id.toLowerCase()}`;
   return (
     <a href={href} className="cp-card" style={{ textDecoration: 'none' }}>
       <div className="cp-card-header">
-        {plugin.icon && !iconError ? (
-          <img src={plugin.icon} alt={plugin.name} className="cp-card-icon" onError={() => setIconError(true)} />
-        ) : (
-          <div className="cp-card-icon-placeholder">{plugin.name.charAt(0)}</div>
-        )}
+        <PluginIcon plugin={plugin} variant="card" />
         <div className="cp-card-meta">
           <div className="cp-card-name">{plugin.name}</div>
           <div className="cp-card-author">{lang === 'zh' ? '作者' : 'by'} {plugin.author}</div>
@@ -72,12 +62,6 @@ export default function LandingPage({ plugins, lang = 'en' }: Props) {
             <div className="cp-stat-value">{plugins.length}</div>
             <div className="cp-stat-label">{t.statsPlugins}</div>
           </div>
-          <div className="cp-stat">
-            <div className="cp-stat-value">
-              {[...new Set(plugins.map((p) => p.author))].length}
-            </div>
-            <div className="cp-stat-label">{t.statsAuthor}</div>
-          </div>
         </div>
       </div>
 
@@ -87,9 +71,6 @@ export default function LandingPage({ plugins, lang = 'en' }: Props) {
           {plugins.map((p) => (
             <PluginMiniCard key={p.id} plugin={p} lang={lang} />
           ))}
-        </div>
-        <div className="cp-landing-preview-footer">
-          <a href={pluginsHref}>{t.viewAll}</a>
         </div>
       </div>
     </div>

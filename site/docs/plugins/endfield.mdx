@@ -11,9 +11,7 @@ head:
       content: website
 ---
 
-import PluginDetailPage from '@components/PluginDetailPage';
-import plugins from '@data/plugins.json';
-import ReadmeEn from '../_readmes/endfield-en.md';
-import ReadmeZh from '../_readmes/endfield-zh.md';
+import PluginDetail from '@components/PluginDetail';
+import plugin from '@data/endfield.json';
 
-<PluginDetailPage id="Endfield" lang="en" plugins={plugins} ReadmeEn={ReadmeEn} ReadmeZh={ReadmeZh} />
+<PluginDetail plugin={plugin} lang="en" />

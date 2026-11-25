@@ -83,11 +83,14 @@ export default defineConfig({
     pluginSitemap({ siteUrl: 'https://cl-plugins.sakurakoi.top' }),
   ],
   builderConfig: {
+    server: {
+      publicDir: { name: path.join(__dirname, '.generated', 'public') },
+    },
     tools: {
       rspack: {
         resolve: {
           alias: {
-            '@data': path.join(__dirname, 'data'),
+            '@data': path.join(__dirname, '.generated', 'data'),
             '@components': path.join(__dirname, 'components'),
           },
         },

@@ -1,68 +1,34 @@
 #!/usr/bin/env node
 /**
  * Build script: reads manifest.json from each plugin folder,
- * extracts icon as PNG, fetches GitHub releases (if GITHUB_TOKEN is set),
- * and outputs site/data/plugins.json + site/public/icons/*.png
+ * extracts icons, fetches upstream READMEs and release notes,
+ * and generates the catalog and public downloads.
  */
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { readRepositoryContent, renderMarkdown } from './github-content.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // site/scripts/ -> site/ -> repo root
 const ROOT = path.resolve(__dirname, '../..');
-const DATA_DIR = path.resolve(__dirname, '..', 'data');
-const ICONS_DIR = path.resolve(__dirname, '..', 'docs', 'public', 'icons');
+const GENERATED_DIR = path.resolve(__dirname, '..', '.generated');
+const DATA_DIR = path.join(GENERATED_DIR, 'data');
+const PUBLIC_DIR = path.join(GENERATED_DIR, 'public');
+const STATIC_PUBLIC_DIR = path.resolve(__dirname, '..', 'docs', 'public');
+const ICONS_DIR = path.join(PUBLIC_DIR, 'icons');
 
 const GITHUB_REPO = 'misaka10843/CollapsePlugin-ReleaseRepo';
 const GITHUB_RAW_BASE = `https://raw.githubusercontent.com/${GITHUB_REPO}/main`;
 const JSDELIVR_BASE = `https://fastly.jsdelivr.net/gh/${GITHUB_REPO}@main`;
 
-// Plugin folders to scan (directory name is the plugin id)
-const PLUGIN_DIRS = ['Arknights', 'Endfield', 'StellaSora', 'BlueArchive'];
-
-const READMES_DIR = path.resolve(__dirname, '..', 'docs', '_readmes');
 // site/plugins/{id}/ — source of README and meta.json (committed, editable without touching manifest)
 const PLUGIN_META_DIR = path.resolve(__dirname, '..', 'plugins');
 
 fs.mkdirSync(DATA_DIR, { recursive: true });
+fs.rmSync(PUBLIC_DIR, { recursive: true, force: true });
+fs.cpSync(STATIC_PUBLIC_DIR, PUBLIC_DIR, { recursive: true });
 fs.mkdirSync(ICONS_DIR, { recursive: true });
-fs.mkdirSync(READMES_DIR, { recursive: true });
-
-async function fetchReleases(pluginId) {
-  const token = process.env.GITHUB_TOKEN;
-  const headers = {
-    'User-Agent': 'collapse-plugin-site-builder',
-    Accept: 'application/vnd.github+json',
-  };
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  } else {
-    console.log(`[build-data] GITHUB_TOKEN not set, using unauthenticated API (60 req/h)`);
-  }
-  try {
-    const url = `https://api.github.com/repos/${GITHUB_REPO}/releases`;
-    const res = await fetch(url, { headers });
-    if (!res.ok) {
-      console.warn(`[build-data] GitHub API error ${res.status} for ${pluginId}`);
-      return [];
-    }
-    const releases = await res.json();
-    // Filter releases that have tags starting with pluginId (e.g. Arknights-v1.0.0)
-    return releases
-      .filter((r) => r.tag_name.startsWith(pluginId + '-') || r.tag_name.startsWith(pluginId + '/'))
-      .map((r) => ({
-        version: r.tag_name,
-        name: r.name || r.tag_name,
-        date: r.published_at,
-        body: r.body || '',
-        url: r.html_url,
-      }));
-  } catch (e) {
-    console.warn(`[build-data] Failed to fetch releases: ${e.message}`);
-    return [];
-  }
-}
 
 function readManifest(pluginId) {
   const manifestPath = path.join(ROOT, pluginId, 'manifest.json');
@@ -87,56 +53,46 @@ function extractIcon(pluginId, iconBase64) {
 function readPluginMeta(pluginId) {
   const metaPath = path.join(PLUGIN_META_DIR, pluginId, 'meta.json');
   if (!fs.existsSync(metaPath)) return {};
-  try { return JSON.parse(fs.readFileSync(metaPath, 'utf-8')); } catch { return {}; }
+  return JSON.parse(fs.readFileSync(metaPath, 'utf-8'));
 }
 
-/**
- * Find the latest zip in build/ by parsing the version from the filename.
- * Filename format: {PluginId}_{version}_API-{apiVersion}_{date}.zip
- * Sort by version segments descending.
- */
-function findLatestZip(pluginId) {
+function readPackage(pluginId) {
   const buildDir = path.join(ROOT, pluginId, 'build');
-  if (!fs.existsSync(buildDir)) return null;
-  const zips = fs.readdirSync(buildDir).filter((f) => f.endsWith('.zip'));
-  if (zips.length === 0) return null;
-
-  const parsed = zips.map((filename) => {
-    // e.g. Arknights_1.0.2.0_API-0.1.5.0_20260422.zip
-    const match = filename.match(/^[^_]+_([\d.]+)_API-([\d.]+)_(\d+)\.zip$/);
-    return {
-      filename,
-      version: match ? match[1] : '0',
-      date: match ? parseInt(match[3], 10) : 0,
-    };
-  });
-
-  // Sort: higher version wins; tie-break by date
-  parsed.sort((a, b) => {
-    const av = a.version.split('.').map(Number);
-    const bv = b.version.split('.').map(Number);
-    for (let i = 0; i < Math.max(av.length, bv.length); i++) {
-      const diff = (bv[i] || 0) - (av[i] || 0);
-      if (diff !== 0) return diff;
-    }
-    return b.date - a.date;
-  });
-
-  const best = parsed[0];
-  const stat = fs.statSync(path.join(buildDir, best.filename));
-  const encodedPath = `build/${best.filename}`;
+  const zips = fs.existsSync(buildDir)
+    ? fs.readdirSync(buildDir, { withFileTypes: true })
+      .filter((entry) => entry.isFile() && /\.zip$/i.test(entry.name))
+    : [];
+  if (zips.length !== 1) {
+    throw new Error(`${pluginId}/build must contain exactly one ZIP. Replace the previous package in the same PR. Found: ${zips.map((zip) => zip.name).join(', ') || 'none'}`);
+  }
+  const filename = zips[0].name;
+  const match = filename.match(/^([^_]+)_(\d+(?:\.\d+)*)_API-\d+(?:\.\d+)*_\d{8}\.zip$/);
+  if (match?.[1] !== pluginId) {
+    throw new Error(`Invalid package filename: ${pluginId}/build/${filename}`);
+  }
+  const stat = fs.statSync(path.join(buildDir, filename));
+  const encodedPath = `build/${encodeURIComponent(filename)}`;
   return {
-    filename: best.filename,
-    version: best.version,
+    filename,
+    version: match[2],
     size: stat.size,
+    siteRelative: `/${pluginId}/${encodedPath}`,
     githubRaw: `${GITHUB_RAW_BASE}/${pluginId}/${encodedPath}`,
     jsdelivr: `${JSDELIVR_BASE}/${pluginId}/${encodedPath}`,
   };
 }
 
-function listAssets(pluginId) {
-  // All files except build/ directory — these are hosted on this site
+function publishAssets(pluginId, latestZip) {
   const pluginDir = path.join(ROOT, pluginId);
+  const destination = path.join(PUBLIC_DIR, pluginId);
+  if (fs.existsSync(destination)) throw new Error(`Plugin ID conflicts with a public asset: ${pluginId}`);
+  function copy(relativePath) {
+    const output = path.join(destination, relativePath);
+    fs.mkdirSync(path.dirname(output), { recursive: true });
+    fs.copyFileSync(path.join(pluginDir, relativePath), output);
+  }
+  copy(`build/${latestZip.filename}`);
+
   const files = [];
   function walk(dir, base) {
     for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -144,26 +100,28 @@ function listAssets(pluginId) {
       if (entry.isDirectory()) {
         if (entry.name === 'build') continue; // build/ not hosted on site
         walk(path.join(dir, entry.name), relBase);
-      } else {
-        const stat = fs.statSync(path.join(dir, entry.name));
-        // Skip README and manifest (docs, not binary assets)
+      } else if (entry.isFile() && !/\.pdb$/i.test(entry.name)) {
+        copy(relBase);
         if (/^README/i.test(entry.name) || entry.name === 'manifest.json') continue;
+        const stat = fs.statSync(path.join(dir, entry.name));
+        const encodedPath = relBase.split('/').map(encodeURIComponent).join('/');
         files.push({
           path: relBase,
           size: stat.size,
-          siteRelative: `/${pluginId}/${relBase}`,
-          githubRaw: `${GITHUB_RAW_BASE}/${pluginId}/${relBase}`,
-          jsdelivr: `${JSDELIVR_BASE}/${pluginId}/${relBase}`,
+          siteRelative: `/${pluginId}/${encodedPath}`,
+          githubRaw: `${GITHUB_RAW_BASE}/${pluginId}/${encodedPath}`,
+          jsdelivr: `${JSDELIVR_BASE}/${pluginId}/${encodedPath}`,
         });
       }
     }
   }
   walk(pluginDir, '');
-  return files;
+  return files.sort((a, b) => a.path.localeCompare(b.path, 'en'));
 }
 
 const IMAGE_EXTS = new Set(['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.bmp']);
-const PUBLIC_ASSETS_DIR = path.resolve(__dirname, '..', 'docs', 'public', 'plugin-assets');
+const PUBLIC_ASSETS_DIR = path.join(PUBLIC_DIR, 'plugin-assets');
+fs.mkdirSync(PUBLIC_ASSETS_DIR, { recursive: true });
 
 function rewriteAndCopyImages(markdown, pluginId) {
   const assetBase = `/plugin-assets/${pluginId}`;
@@ -177,68 +135,49 @@ function rewriteAndCopyImages(markdown, pluginId) {
       const ext = path.extname(clean).toLowerCase();
       if (!IMAGE_EXTS.has(ext)) return match; // leave non-image relative links untouched
       const srcFile = path.join(srcBase, clean);
-      if (fs.existsSync(srcFile)) {
-        const dstFile = path.join(dstBase, clean);
-        fs.mkdirSync(path.dirname(dstFile), { recursive: true });
-        fs.copyFileSync(srcFile, dstFile);
-      }
+      const relative = path.relative(srcBase, srcFile);
+      if (relative === '..' || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) return match;
+      if (!fs.existsSync(srcFile) || !fs.lstatSync(srcFile).isFile()) return match;
+      const dstFile = path.join(dstBase, clean);
+      fs.mkdirSync(path.dirname(dstFile), { recursive: true });
+      fs.copyFileSync(srcFile, dstFile);
       return `![${alt}](${assetBase}/${clean}${title})`;
     }
   );
 }
 
-function copyReadmes(pluginId) {
-  const id = pluginId.toLowerCase();
-  const metaDir = path.join(PLUGIN_META_DIR, pluginId);
-  const src = (lang) => lang === 'en'
-    ? path.join(metaDir, 'README.md')
-    : path.join(metaDir, 'README.zh-CN.md');
-  const dst = (lang) => path.join(READMES_DIR, `${id}-${lang}.md`);
-  for (const lang of ['en', 'zh']) {
-    // zh falls back to en if zh-CN file missing
-    const srcFile = fs.existsSync(src(lang)) ? src(lang)
-      : lang === 'zh' && fs.existsSync(src('en')) ? src('en')
-      : null;
-    if (srcFile) {
-      const content = rewriteAndCopyImages(fs.readFileSync(srcFile, 'utf-8'), pluginId);
-      fs.writeFileSync(dst(lang), content, 'utf-8');
-    } else {
-      fs.writeFileSync(dst(lang), `# ${pluginId}\n\nNo documentation available.\n`);
-    }
-  }
+function readLocalReadme(pluginId, filename) {
+  const source = path.join(PLUGIN_META_DIR, pluginId, filename);
+  if (!fs.existsSync(source)) return '';
+  return renderMarkdown(rewriteAndCopyImages(fs.readFileSync(source, 'utf-8'), pluginId));
 }
 
 async function main() {
   const plugins = [];
+  const manifests = fs.readdirSync(PLUGIN_META_DIR, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map(({ name: id }) => {
+      if (!/^[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*$/.test(id)) {
+        throw new Error(`Invalid plugin directory name: ${id}`);
+      }
+      return { id, manifest: readManifest(id), latestZip: readPackage(id), meta: readPluginMeta(id) };
+    })
+    .sort((a, b) => a.id.localeCompare(b.id, 'en'));
+  if (!manifests.length) throw new Error('No plugins registered in site/plugins');
+  const upstream = await Promise.all(manifests.map(async (plugin) => ({
+    ...plugin,
+    ...await readRepositoryContent(plugin.meta),
+  })));
 
-  for (const pluginId of PLUGIN_DIRS) {
-    const pluginPath = path.join(ROOT, pluginId);
-    if (!fs.existsSync(pluginPath)) {
-      console.warn(`[build-data] Plugin dir not found: ${pluginId}`);
-      continue;
-    }
+  for (const { id: pluginId, manifest, latestZip, meta, readmes, releases, repoUrl, releasesUrl } of upstream) {
     console.log(`[build-data] Processing ${pluginId}...`);
 
-    let manifest;
-    try {
-      manifest = readManifest(pluginId);
-    } catch (e) {
-      console.error(`[build-data] Failed to read manifest for ${pluginId}: ${e.message}`);
-      continue;
-    }
-
-    const meta = readPluginMeta(pluginId);
-    copyReadmes(pluginId);
     const iconPath = extractIcon(pluginId, manifest.PluginAlternativeIcon);
-    const releases = await fetchReleases(pluginId);
-    const assets = listAssets(pluginId);
-    const latestZip = findLatestZip(pluginId);
+    const assets = publishAssets(pluginId, latestZip);
 
-    if (latestZip) {
-      console.log(`[build-data]   Latest zip: ${latestZip.filename}`);
-    }
+    console.log(`[build-data]   Package: ${latestZip.filename}`);
 
-    plugins.push({
+    const summary = {
       id: pluginId,
       name: manifest.MainPluginName,
       author: manifest.MainPluginAuthor,
@@ -248,16 +187,27 @@ async function main() {
       createdAt: manifest.PluginCreationDate,
       updatedAt: manifest.ManifestDate,
       icon: iconPath,
+    };
+    plugins.push(summary);
+    const details = {
+      ...summary,
       mainLibrary: manifest.MainLibraryName,
       latestZip,
       assets,
       releases,
+      readmes: {
+        en: readmes.en || readLocalReadme(pluginId, 'README.md'),
+        zh: readmes.zh || readLocalReadme(pluginId, 'README.zh-CN.md'),
+      },
+      repoUrl,
+      releasesUrl,
       announcement: meta.announcement || null,
-    });
+    };
+    fs.writeFileSync(path.join(DATA_DIR, `${pluginId.toLowerCase()}.json`), JSON.stringify(details));
   }
 
   const outputPath = path.join(DATA_DIR, 'plugins.json');
-  fs.writeFileSync(outputPath, JSON.stringify(plugins, null, 2), 'utf-8');
+  fs.writeFileSync(outputPath, JSON.stringify(plugins), 'utf-8');
   console.log(`[build-data] Written ${plugins.length} plugins to ${outputPath}`);
 }
 

@@ -11,9 +11,7 @@ head:
       content: website
 ---
 
-import PluginDetailPage from '@components/PluginDetailPage';
-import plugins from '@data/plugins.json';
-import ReadmeEn from '../_readmes/arknights-en.md';
-import ReadmeZh from '../_readmes/arknights-zh.md';
+import PluginDetail from '@components/PluginDetail';
+import plugin from '@data/arknights.json';
 
-<PluginDetailPage id="Arknights" lang="en" plugins={plugins} ReadmeEn={ReadmeEn} ReadmeZh={ReadmeZh} />
+<PluginDetail plugin={plugin} lang="en" />

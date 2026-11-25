@@ -6,8 +6,7 @@
 ## 安装步骤
 
 1. **下载插件**
-   前往 [插件列表](/plugins) 下载最新的插件压缩包（
-   `.zip` 文件）。
+   前往 [插件列表](/zh/plugins/) 下载最新的插件压缩包（`.zip` 文件）。
 
    ![Release Download Page](/installation/image.png)
 

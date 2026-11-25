@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import type { PluginData } from './types';
-import { useDownload } from './useDownload';
+import { formatBytes, formatDate } from './format';
+import PluginIcon from './PluginIcon';
+import { PackageDownload } from './PackageDownload';
 
 interface Props {
   plugin: PluginData;
   lang?: 'en' | 'zh';
-  ReadmeEn?: React.ComponentType;
-  ReadmeZh?: React.ComponentType;
 }
 
 const i18n = {
@@ -14,10 +14,8 @@ const i18n = {
     backToList: 'Back to plugins',
     by: 'by',
     download: 'Download Plugin',
-    downloading: 'Starting download...',
-    testing: 'Testing speed...',
-    speedError: 'All mirrors unavailable. Please download manually.',
-    usingMirror: (label: string) => `Downloading via ${label}`,
+    testing: 'Checking mirrors…',
+    selected: (source: string) => `Selected mirror: ${source}`,
     details: 'Details',
     about: 'About',
     changelog: 'Changelog',
@@ -27,8 +25,10 @@ const i18n = {
     created: 'Created',
     updated: 'Last Updated',
     mainLib: 'Main Library',
-    noReadme: 'No documentation available.',
     noChangelog: 'No changelog available.',
+    sourceReadme: 'View README on GitHub',
+    allReleases: 'View releases on GitHub',
+    noReadme: 'No README available.',
     file: 'File',
     size: 'Size',
     siteLink: 'This site',
@@ -43,10 +43,8 @@ const i18n = {
     announcement: '公告',
     by: '作者',
     download: '下载插件',
-    downloading: '开始下载...',
-    testing: '测速中...',
-    speedError: '所有节点不可用，请手动下载。',
-    usingMirror: (label: string) => `正在通过 ${label} 下载`,
+    testing: '正在检测下载节点…',
+    selected: (source: string) => `已选择${source}节点`,
     details: '详细信息',
     about: '简介',
     changelog: '更新日志',
@@ -56,8 +54,10 @@ const i18n = {
     created: '创建时间',
     updated: '最后更新',
     mainLib: '主库文件',
-    noReadme: '暂无文档。',
     noChangelog: '暂无更新日志。',
+    sourceReadme: '在 GitHub 查看 README',
+    allReleases: '在 GitHub 查看发布记录',
+    noReadme: '暂无插件简介。',
     file: '文件',
     size: '大小',
     siteLink: '本站',
@@ -70,87 +70,14 @@ const i18n = {
 
 type Tab = 'about' | 'changelog' | 'assets';
 
-function formatDate(iso: string, lang: 'en' | 'zh'): string {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleDateString(lang === 'zh' ? 'zh-CN' : 'en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
-}
-
-function formatBytes(b: number): string {
-  if (b < 1024) return `${b} B`;
-  if (b < 1024 * 1024) return `${(b / 1024).toFixed(1)} KB`;
-  return `${(b / 1024 / 1024).toFixed(1)} MB`;
-}
-
-function PluginIcon({ plugin }: { plugin: PluginData }) {
-  const [error, setError] = useState(false);
-  if (plugin.icon && !error) {
-    return (
-      <img
-        src={plugin.icon}
-        alt={plugin.name}
-        className="cp-detail-icon"
-        onError={() => setError(true)}
-      />
-    );
-  }
-  return (
-    <div className="cp-detail-icon-placeholder">
-      {plugin.name.charAt(0).toUpperCase()}
-    </div>
-  );
-}
-
-function DownloadButton({ plugin, t }: { plugin: PluginData; t: typeof i18n['en'] }) {
-  const { status, bestLabel, triggerDownload } = useDownload(plugin);
-
-  if (!plugin.latestZip) return null;
-
-  const isLoading = status === 'testing';
-  const btnLabel = isLoading ? t.testing : t.download;
-  const statusMsg = status === 'error'
-    ? t.speedError
-    : status === 'done' && bestLabel
-      ? t.usingMirror(bestLabel)
-      : '';
-
-  return (
-    <div>
-      <button
-        className={`cp-download-btn ${isLoading ? 'loading' : ''}`}
-        onClick={triggerDownload}
-        disabled={isLoading}
-      >
-        {isLoading ? (
-          <span className="cp-spinner" />
-        ) : (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-            <polyline points="7 10 12 15 17 10" />
-            <line x1="12" y1="15" x2="12" y2="3" />
-          </svg>
-        )}
-        {btnLabel}
-      </button>
-      {statusMsg && (
-        <div className={`cp-speed-status ${status === 'done' ? 'ok' : status === 'error' ? 'error' : 'testing'}`}>
-          {statusMsg}
-        </div>
-      )}
-    </div>
-  );
-}
-
-export default function PluginDetail({ plugin, lang = 'en', ReadmeEn, ReadmeZh }: Props) {
+export default function PluginDetail({ plugin, lang = 'en' }: Props) {
   const t = i18n[lang];
   const [tab, setTab] = useState<Tab>('about');
-  const [readmeLang, setReadmeLang] = useState<'en' | 'zh'>(lang);
+  const [readmeLang, setReadmeLang] = useState<'en' | 'zh'>(() =>
+    plugin.readmes[lang] ? lang : lang === 'en' ? 'zh' : 'en');
 
   const listHref = lang === 'zh' ? '/zh/plugins/' : '/plugins/';
-  const ReadmeComponent = readmeLang === 'zh' ? (ReadmeZh || ReadmeEn) : (ReadmeEn || ReadmeZh);
+  const readme = plugin.readmes[readmeLang];
 
   return (
     <div className="cp-detail">
@@ -169,7 +96,7 @@ export default function PluginDetail({ plugin, lang = 'en', ReadmeEn, ReadmeZh }
       )}
 
       <div className="cp-detail-header">
-        <PluginIcon plugin={plugin} />
+          <PluginIcon plugin={plugin} variant="detail" />
         <div className="cp-detail-title">
           <h1>{plugin.name}</h1>
           <div className="cp-author-row">
@@ -181,11 +108,14 @@ export default function PluginDetail({ plugin, lang = 'en', ReadmeEn, ReadmeZh }
       </div>
 
       <div className="cp-detail-body">
+        <PackageDownload zip={plugin.latestZip} text={t} />
         <div className="cp-detail-main">
           <div className="cp-tabs">
             {(['about', 'changelog', 'assets'] as Tab[]).map((tabId) => (
               <button
                 key={tabId}
+                type="button"
+                aria-pressed={tab === tabId}
                 className={`cp-tab ${tab === tabId ? 'active' : ''}`}
                 onClick={() => setTab(tabId)}
               >
@@ -201,31 +131,32 @@ export default function PluginDetail({ plugin, lang = 'en', ReadmeEn, ReadmeZh }
 
           {tab === 'about' && (
             <div>
-              <div className="cp-lang-toggle" style={{ marginBottom: 12 }}>
+              {plugin.readmes.en && plugin.readmes.zh && <div className="cp-lang-toggle" style={{ marginBottom: 12 }}>
                 <button
+                  type="button"
+                  lang="en"
+                  aria-pressed={readmeLang === 'en'}
                   className={`cp-lang-btn ${readmeLang === 'en' ? 'active' : ''}`}
                   onClick={() => setReadmeLang('en')}
                 >
                   English
                 </button>
                 <button
+                  type="button"
+                  lang="zh"
+                  aria-pressed={readmeLang === 'zh'}
                   className={`cp-lang-btn ${readmeLang === 'zh' ? 'active' : ''}`}
                   onClick={() => setReadmeLang('zh')}
                 >
                   中文
                 </button>
-              </div>
-              {ReadmeComponent ? (
+              </div>}
+              {readme ? (
                 <div className="cp-readme-rspress">
-                  <div className="rspress-doc">
-                    <ReadmeComponent />
-                  </div>
+                  <div className="rspress-doc" lang={readmeLang} dangerouslySetInnerHTML={{ __html: readme }} />
                 </div>
-              ) : (
-                <div className="cp-readme-html">
-                  <p style={{ color: 'var(--cp-text-muted)' }}>{t.noReadme}</p>
-                </div>
-              )}
+              ) : <div className="cp-empty">{t.noReadme}</div>}
+              {plugin.repoUrl && <a className="cp-upstream-link" href={plugin.repoUrl}>{t.sourceReadme}</a>}
             </div>
           )}
 
@@ -244,13 +175,14 @@ export default function PluginDetail({ plugin, lang = 'en', ReadmeEn, ReadmeZh }
                         </a>
                       </h4>
                       <div className="cp-date">{formatDate(release.date, lang)}</div>
-                      {release.body && (
-                        <div className="cp-timeline-body">{release.body}</div>
+                      {release.bodyHtml && (
+                        <div className="cp-timeline-body rspress-doc" dangerouslySetInnerHTML={{ __html: release.bodyHtml }} />
                       )}
                     </div>
                   </div>
                 ))
               )}
+              {plugin.releasesUrl && <a className="cp-upstream-link" href={plugin.releasesUrl}>{t.allReleases}</a>}
             </div>
           )}
 
@@ -295,8 +227,6 @@ export default function PluginDetail({ plugin, lang = 'en', ReadmeEn, ReadmeZh }
         </div>
 
         <div className="cp-detail-sidebar">
-          <DownloadButton plugin={plugin} t={t} />
-
           <div className="cp-sidebar-card">
             <h3>{t.details}</h3>
             <div className="cp-info-row">
@@ -319,12 +249,10 @@ export default function PluginDetail({ plugin, lang = 'en', ReadmeEn, ReadmeZh }
               <span className="label">{t.mainLib}</span>
               <span className="value" style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>{plugin.mainLibrary}</span>
             </div>
-            {plugin.latestZip && (
-              <div className="cp-info-row">
-                <span className="label">{t.zipVersion}</span>
-                <span className="value" style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>{plugin.latestZip.version}</span>
-              </div>
-            )}
+            <div className="cp-info-row">
+              <span className="label">{t.zipVersion}</span>
+              <span className="value" style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>{plugin.latestZip.version}</span>
+            </div>
           </div>
         </div>
       </div>

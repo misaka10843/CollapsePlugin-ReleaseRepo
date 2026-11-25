@@ -1,3 +1,5 @@
 {
-  "announcement": null
+  "announcement": null,
+  "repository": "misaka10843/Hi3Helper.Plugin.Hypergryph",
+  "releaseTagPrefix": "Arknights@"
 }

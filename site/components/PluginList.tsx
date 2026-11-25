@@ -1,8 +1,10 @@
 import React, { useState, useMemo } from 'react';
-import type { PluginData } from './types';
+import type { PluginSummary } from './types';
+import PluginIcon from './PluginIcon';
+import { formatDate } from './format';
 
 interface Props {
-  plugins: PluginData[];
+  plugins: PluginSummary[];
   lang?: 'en' | 'zh';
 }
 
@@ -30,39 +32,6 @@ const i18n = {
     viewDetails: '查看详情 →',
   },
 };
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
-}
-
-function formatBytes(b: number): string {
-  if (b < 1024) return `${b} B`;
-  if (b < 1024 * 1024) return `${(b / 1024).toFixed(1)} KB`;
-  return `${(b / 1024 / 1024).toFixed(1)} MB`;
-}
-
-function PluginIcon({ plugin }: { plugin: PluginData }) {
-  const [error, setError] = useState(false);
-  if (plugin.icon && !error) {
-    return (
-      <img
-        src={plugin.icon}
-        alt={plugin.name}
-        className="cp-card-icon"
-        onError={() => setError(true)}
-      />
-    );
-  }
-  return (
-    <div className="cp-card-icon-placeholder">
-      {plugin.name.charAt(0).toUpperCase()}
-    </div>
-  );
-}
 
 export default function PluginList({ plugins, lang = 'en' }: Props) {
   const t = i18n[lang];
@@ -92,7 +61,8 @@ export default function PluginList({ plugins, lang = 'en' }: Props) {
             <line x1="21" y1="21" x2="16.65" y2="16.65" />
           </svg>
           <input
-            type="text"
+            type="search"
+            aria-label={t.searchPlaceholder}
             placeholder={t.searchPlaceholder}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -114,7 +84,7 @@ export default function PluginList({ plugins, lang = 'en' }: Props) {
               className="cp-card"
             >
               <div className="cp-card-header">
-                <PluginIcon plugin={plugin} />
+                <PluginIcon plugin={plugin} variant="card" />
                 <div className="cp-card-meta">
                   <div className="cp-card-name">{plugin.name}</div>
                   <div className="cp-card-author">{t.by} {plugin.author}</div>
@@ -127,7 +97,7 @@ export default function PluginList({ plugins, lang = 'en' }: Props) {
                   <circle cx="12" cy="12" r="10" />
                   <polyline points="12 6 12 12 16 14" />
                 </svg>
-                {t.updated} {formatDate(plugin.updatedAt)}
+                {t.updated} {formatDate(plugin.updatedAt, lang)}
                 <span style={{ marginLeft: 'auto', color: 'var(--cp-accent)', fontSize: '0.8rem' }}>
                   {t.viewDetails}
                 </span>

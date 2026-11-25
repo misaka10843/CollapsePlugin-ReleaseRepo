@@ -11,9 +11,7 @@ head:
       content: website
 ---
 
-import PluginDetailPage from '@components/PluginDetailPage';
-import plugins from '@data/plugins.json';
-import ReadmeEn from '../_readmes/bluearchive-en.md';
-import ReadmeZh from '../_readmes/bluearchive-zh.md';
+import PluginDetail from '@components/PluginDetail';
+import plugin from '@data/bluearchive.json';
 
-<PluginDetailPage id="BlueArchive" lang="en" plugins={plugins} ReadmeEn={ReadmeEn} ReadmeZh={ReadmeZh} />
+<PluginDetail plugin={plugin} lang="en" />

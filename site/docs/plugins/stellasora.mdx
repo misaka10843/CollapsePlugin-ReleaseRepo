@@ -11,9 +11,7 @@ head:
       content: website
 ---
 
-import PluginDetailPage from '@components/PluginDetailPage';
-import plugins from '@data/plugins.json';
-import ReadmeEn from '../_readmes/stellasora-en.md';
-import ReadmeZh from '../_readmes/stellasora-zh.md';
+import PluginDetail from '@components/PluginDetail';
+import plugin from '@data/stellasora.json';
 
-<PluginDetailPage id="StellaSora" lang="en" plugins={plugins} ReadmeEn={ReadmeEn} ReadmeZh={ReadmeZh} />
+<PluginDetail plugin={plugin} lang="en" />

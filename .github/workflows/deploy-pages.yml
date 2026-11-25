@@ -3,15 +3,16 @@ name: Deploy GitHub Pages
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
   workflow_dispatch:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
-  group: pages
+  group: ${{ github.event_name == 'pull_request' && format('pages-pr-{0}', github.event.pull_request.number) || 'pages' }}
   cancel-in-progress: false
 
 jobs:
@@ -21,12 +22,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          persist-credentials: false
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: latest
+          package_json_file: site/package.json
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -36,37 +37,28 @@ jobs:
           cache-dependency-path: site/pnpm-lock.yaml
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
         working-directory: site
 
-      - name: Build plugin data (fetch GitHub releases + extract icons)
-        run: pnpm run build:data
+      - name: Build site and plugin downloads
+        run: |
+          pnpm run typecheck
+          pnpm run build
         working-directory: site
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build site
-        run: pnpm exec rspress build
-        working-directory: site
-
-      # Copy plugin files (excluding build/ dirs and .pdb debug symbols) into
-      # the dist output so they are served from gh-pages under /Arknights/ etc.
-      - name: Copy plugin files to dist
-        run: |
-          DIST="site/doc_build"
-          for PLUGIN in Arknights Endfield StellaSora; do
-            DEST="$DIST/$PLUGIN"
-            mkdir -p "$DEST"
-            # Copy everything except the build/ directory
-            rsync -a --exclude='build/' "$PLUGIN/" "$DEST/"
-          done
-
       - name: Upload Pages artifact
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         uses: actions/upload-pages-artifact@v3
         with:
           path: site/doc_build
 
   deploy:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
