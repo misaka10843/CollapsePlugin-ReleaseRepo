@@ -1,0 +1,113 @@
+name: Auto-merge plugin releases
+
+on:
+  workflow_run:
+    workflows: [Deploy GitHub Pages]
+    types: [completed]
+
+permissions: {}
+
+concurrency:
+  group: auto-merge-plugin-release-${{ github.event.workflow_run.head_branch }}
+  cancel-in-progress: false
+
+jobs:
+  merge:
+    if: >-
+      github.repository == 'misaka10843/CollapsePlugin-ReleaseRepo' &&
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.actor.login == github.repository_owner &&
+      github.event.workflow_run.head_repository.full_name == github.repository &&
+      startsWith(github.event.workflow_run.head_branch, 'plugins-release-')
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: write
+      pull-requests: read
+    steps:
+      - name: Validate release PR, merge and deploy
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const run = context.payload.workflow_run;
+            const repo = context.repo;
+            const repository = `${repo.owner}/${repo.repo}`;
+            const base = 'main';
+            const deployment = 'deploy-pages.yml';
+            const skip = (reason) => core.notice(`Manual review: ${reason}`);
+
+            // This job only reads GitHub metadata. It never checks out PR code or consumes PR artifacts.
+            if (run.path?.split('@')[0] !== `.github/workflows/${deployment}`) {
+              return skip('unexpected validation workflow');
+            }
+            const associations = run.pull_requests ?? [];
+            if (associations.length !== 1) return skip('expected one PR associated with the validation run');
+            const checked = associations[0];
+            const pull_number = checked.number;
+            const { data: pr } = await github.rest.pulls.get({ ...repo, pull_number });
+            if (pr.state !== 'open' || pr.draft || pr.user.login !== repo.owner ||
+                pr.base.ref !== base || pr.base.repo.full_name !== repository ||
+                pr.head.repo?.full_name !== repository || pr.head.ref !== run.head_branch ||
+                !/^plugins-release-\d+$/.test(pr.head.ref)) {
+              return skip('PR does not match the trusted release publisher or branch');
+            }
+            if (pr.head.sha !== checked.head.sha ||
+                (run.head_sha !== pr.head.sha && run.head_sha !== pr.merge_commit_sha)) {
+              return skip('PR head changed since validation');
+            }
+            if (pr.labels.some(({ name }) => name === 'manual-review')) {
+              return skip('manual-review label present');
+            }
+
+            const { data: baseRef } = await github.rest.git.getRef({ ...repo, ref: `heads/${base}` });
+            if (baseRef.object.sha !== checked.base.sha) return skip('main advanced since validation');
+            const { data: registry } = await github.rest.repos.getContent({
+              ...repo, path: 'site/plugins', ref: checked.base.sha,
+            });
+            const plugins = new Set(registry.filter(({ type }) => type === 'dir').map(({ name }) => name));
+            const changed = await github.paginate(github.rest.pulls.listFiles, { ...repo, pull_number, per_page: 100 });
+            if (!changed.length || changed.length !== pr.changed_files) return skip('incomplete PR file list');
+
+            const touched = new Map();
+            function classify(filename) {
+              const [id, ...parts] = filename.split('/');
+              if (!plugins.has(id) || !/^[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*$/.test(id)) return null;
+              const path = parts.join('/');
+              if (path === 'manifest.json') return { id, kind: 'manifest' };
+              if (path === `${id}.dll`) return { id, kind: 'dll' };
+              if (path.startsWith(`build/${id}_`) &&
+                  /^build\/[^_\/]+_\d+(?:\.\d+)*_API-\d+(?:\.\d+)*_\d{8}\.zip$/.test(path)) {
+                return { id, kind: 'zip' };
+              }
+              if (/^Lib\/(?:[\w-]+\/)*[\w.-]+\.(?:dll|so|dylib)$/i.test(path)) return { id, kind: 'runtime' };
+              return null;
+            }
+            for (const file of changed) {
+              const item = classify(file.filename);
+              if (!item) return skip(`out-of-scope path: ${file.filename}`);
+              const previous = file.previous_filename && classify(file.previous_filename);
+              if ((file.previous_filename && (!previous || previous.id !== item.id || previous.kind !== item.kind)) ||
+                  (file.status === 'renamed' && !previous) ||
+                  (['manifest', 'dll'].includes(item.kind) && file.status !== 'modified') ||
+                  !['modified', 'added', 'removed', 'renamed'].includes(file.status)) {
+                return skip(`unexpected change to ${file.filename}`);
+              }
+              if (!touched.has(item.id)) touched.set(item.id, new Set());
+              if (item.kind !== 'zip' || file.status !== 'removed') touched.get(item.id).add(item.kind);
+            }
+            if ([...touched.values()].some((kinds) => !['manifest', 'dll', 'zip'].every((kind) => kinds.has(kind)))) {
+              return skip('each release must update its manifest, main DLL and installable ZIP');
+            }
+
+            const { data: currentBase } = await github.rest.git.getRef({ ...repo, ref: `heads/${base}` });
+            if (currentBase.object.sha !== checked.base.sha) return skip('main changed during validation');
+            const { data: merge } = await github.rest.pulls.merge({
+              ...repo, pull_number, sha: checked.head.sha, merge_method: 'merge',
+              commit_title: `chore(release): publish ${[...touched.keys()].sort().join(', ')} (#${pull_number})`,
+            });
+            if (!merge.merged) throw new Error(merge.message);
+            core.info(`Merged release PR #${pull_number} at ${merge.sha}`);
+
+            // GITHUB_TOKEN merges suppress push-triggered workflows. Dispatch Pages explicitly.
+            await github.rest.actions.createWorkflowDispatch({ ...repo, workflow_id: deployment, ref: base });
