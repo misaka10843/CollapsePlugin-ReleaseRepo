@@ -1,3 +1,8 @@
+---
+title: "安装 Collapse Launcher 插件"
+description: "下载插件 ZIP，在 Collapse Launcher 的插件管理菜单中添加安装包，然后重启启动器。"
+---
+
 # 安装方法
 
 **前置要求：**

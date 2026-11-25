@@ -1,3 +1,8 @@
+---
+title: "提交和发布插件"
+description: "准备 Collapse Launcher 插件安装包和清单，填写插件目录信息，并提交 Pull Request。"
+---
+
 # 发布插件
 
 如果你开发了自己的 Collapse Launcher 插件并希望分享给更多玩家，欢迎向 [CollapsePlugin-ReleaseRepo](https://github.com/misaka10843/CollapsePlugin-ReleaseRepo) 提交 Pull Request。请在 PR 描述中附上：

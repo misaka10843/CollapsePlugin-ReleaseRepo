@@ -1,3 +1,8 @@
+---
+title: "Install Collapse Launcher Plugins"
+description: "Download a plugin ZIP, add it in Collapse Launcher’s Plugin Management menu, and restart the launcher."
+---
+
 # Installation
 
 **Prerequisites:**

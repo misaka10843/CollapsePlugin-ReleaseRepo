@@ -1,3 +1,8 @@
+---
+title: "Collapse Launcher 插件入门"
+description: "了解 Collapse Launcher 插件如何扩展游戏支持，以及清单、运行库和安装包的用途。"
+---
+
 # 简介
 
 欢迎使用 **Collapse Launcher 插件库** —— 一套为 [Collapse Launcher](https://github.com/CollapseLauncher/Collapse) 提供更多游戏支持的第三方插件。

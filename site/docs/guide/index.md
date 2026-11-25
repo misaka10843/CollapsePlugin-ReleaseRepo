@@ -1,3 +1,8 @@
+---
+title: "Collapse Launcher Plugin Guide"
+description: "Learn how Collapse Launcher plugins add game support with a manifest, runtime library, and installable ZIP."
+---
+
 # Introduction
 
 Welcome to **Collapse Launcher Plugins** — a collection of third-party plugins that extend [Collapse Launcher](https://github.com/CollapseLauncher/Collapse) with support for additional games.

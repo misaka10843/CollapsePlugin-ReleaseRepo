@@ -1,3 +1,8 @@
+---
+title: "Submit and Publish a Plugin"
+description: "Prepare a Collapse Launcher plugin ZIP and manifest, add catalog metadata, and submit a pull request."
+---
+
 # Submit & Publish a Plugin
 
 Have a Collapse Launcher plugin you'd like to share? Open a pull request against [CollapsePlugin-ReleaseRepo](https://github.com/misaka10843/CollapsePlugin-ReleaseRepo) and include:
