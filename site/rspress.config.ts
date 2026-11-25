@@ -6,10 +6,15 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const BROWSER_LANG_REDIRECT_SCRIPT = `(function(){try{if(sessionStorage.getItem('cp-lang-init'))return;sessionStorage.setItem('cp-lang-init','1');var p=location.pathname;if(p.startsWith('/zh/')||p==='/zh')return;var lang=(navigator.languages&&navigator.languages[0])||navigator.language||'';if(/^zh\\b/i.test(lang)){var target='/zh'+(p==='/'?'/':p)+location.search+location.hash;location.replace(target);}}catch(e){}})();`;
+
 export default defineConfig({
   root: path.join(__dirname, 'docs'),
   title: 'Collapse Launcher Plugins',
   description: 'Third-party plugins for Collapse Launcher',
+  head: [
+    `<script>${BROWSER_LANG_REDIRECT_SCRIPT}</script>`,
+  ],
   themeConfig: {
     darkMode: true,
     socialLinks: [
@@ -35,6 +40,7 @@ export default defineConfig({
               items: [
                 { text: 'Introduction', link: '/guide/' },
                 { text: 'Installation', link: '/guide/installation' },
+                { text: 'Submit & Publish', link: '/guide/publishing' },
               ],
             },
           ],
@@ -55,6 +61,7 @@ export default defineConfig({
               items: [
                 { text: '简介', link: '/zh/guide/' },
                 { text: '安装方法', link: '/zh/guide/installation' },
+                { text: '发布插件', link: '/zh/guide/publishing' },
               ],
             },
           ],
